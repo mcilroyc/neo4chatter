@@ -9,10 +9,15 @@
     },
     "dependencies": {
         "underscore": "1.5.x",
+        "async": "0.2.9",
         "coffee-script": "1.6.x",
         "express": "3.x",
         "winston": "0.7.x",
         "fb-signed-parser": "0.0.x",
-        "nforce": "0.5.2"
+        "nforce": "0.5.2",
+        "request": "2.27.x",
+        "node-neo4j": "1.0.4",
+        "neo4j": "1.0.x",
+	"hbs":"2.4.x"
     }
 }

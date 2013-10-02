@@ -1,0 +1,127 @@
+<html>
+    <head>
+        <title>Chatter Graph Utils</title>
+        <!-- jQuery and underscore -->
+        <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+
+        <!-- Latest compiled and minified Bootstrap CSS -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+
+        <!-- SFDC Canvas -->
+        <script type="text/javascript" src="https://na9.salesforce.com/canvas/sdk/js/28.0/canvas-all.js"></script>
+
+        <!-- D3 Visualizations stuff-->
+        <link type="text/css" rel="stylesheet" href="network.css"/>
+        <script type="text/javascript" src="/d3.min.js"></script>
+        <script type="text/javascript" src="/d3.geom.min.js"></script>
+        <script type="text/javascript" src="/d3.layout.min.js"></script>
+
+        <!-- Custom Script -->
+        <script type="text/javascript">
+            var sr = $.parseJSON('{{{canvasRequest}}}');
+            var allUsers = $.parseJSON('{{{allUsers}}}');
+
+            console.log ("!!userId:" + sr.context.user.userId);
+
+            $(function() {
+                $('#username').html(sr.context.user.fullName);
+
+                function getShortestPath() {
+                    var that = this;
+                    var url = "{{{thisDomain}}}/shortestPath/" + sr.context.user.userId + '/' + $(this).attr('id');
+                    console.log (url);
+                    $.ajax({
+                        url: url,
+                        success: function (data) {
+                            console.log("data returned:" + JSON.stringify(data));
+                            var firstCol = $(that).children().first();
+                            if (data && data.pathLength != undefined) {
+                                firstCol.next().html(data.pathLength);
+                                if (data.pathLength == 0){
+                                    firstCol.next().next().html("This is you, dummy");
+                                }
+                                else {
+                                    var link;
+                                    var c = 1;
+                                    var relCell = firstCol.next().next();
+                                    relCell.empty()
+                                    _.each(data.relationships, function(el){
+                                        link = $('<a>', {
+                                            text : "relationship " + c,
+                                            target : "_blank",
+                                            href : el
+                                        });
+                                        relCell.append(link);
+                                        if (c < data.relationships.length) {
+                                            relCell.append(", ");    
+                                        }
+                                        c++;
+                                    });
+                                }
+                            }
+                            else {
+                                $(that).children().first().next().html("No Path!");
+                            }
+                        }
+
+                    })
+                }
+
+                _.each (allUsers, function(el){
+                    var a = $("<tr><td><a>" + el.name + "</a></td><td><br /></td><td><br /></td></tr>").attr("id", el.id).click(getShortestPath);
+                    $("#userList").append(a);
+                });
+            });
+        </script>
+
+    </head>
+
+	<body>
+        <div class="navbar navbar-fixed-top" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="#">socialforce</a>
+            </div>
+              <ul class="nav nav-tabs">
+                <li class="active"><a href="#home" data-toggle="tab">Home</a></li>
+                <li><a href="#viz" data-toggle="tab">Visualization</a></li>
+              </ul>
+          </div>
+        </div>
+
+        <div class="jumbotron">
+            <div class="container">
+                <h2>Chatter Social Network Utility</h2>
+                <p>Hello <span id="username"></span></p>
+            </div>
+        </div><!-- /.container -->
+
+        <div class="tab-content">
+          <div class="tab-pane active" id="home">
+            <div class="container">
+                <div class="row">
+                    <table id="userList" class="table-bordered">
+                        <tr>
+                            <th>Chatter User</th>
+                            <th>Degrees of Separation</th>
+                            <th>Relationships</th>
+                        </tr>
+                    </table>
+                </div>
+            </div><!-- /.container -->
+          </div>
+          <div class="tab-pane" id="viz">
+            <div class="container">
+                <div id="chart"></div>
+                <script src="/network.js"></script>
+            </div>
+        </div>
+
+        <div class="container" class="hidden">
+    	   <textarea class="hidden row" rows="30" cols="80">{{canvasRequestPretty}}</textarea>
+        </div>
+        
+	</body>
+</html>
