@@ -87,7 +87,7 @@ app.get '/shortestPath/:fromId/:toId', (req, res) ->
             neoService.getShortestPath fromNode, toNode, callback
         ],
         (err, result) -> 
-            winston.info "ended with : #{err or result}"
+            winston.info "shortest path result : #{err or result}"
             if err
                 res.send err
             else
@@ -97,7 +97,6 @@ app.get '/shortestPath/:fromId/:toId', (req, res) ->
                     cleanResults =
                         pathLength : result._length
                         relationships : _.pluck(_.pluck(result._relationships,'_data'),'self')
-                    #res.send "length: #{result._length} with relationships #{_.pluck(_.pluck(result._relationships,'_data'),'self')} "
                     res.json cleanResults
     
 
